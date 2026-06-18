@@ -7,6 +7,8 @@ import { Ionicons } from '@expo/vector-icons';
 import { Colors } from '@/constants/Colors';
 import Avatar from '@/components/Avatar';
 import { LinearGradient } from 'expo-linear-gradient';
+import { Alert } from 'react-native';
+import * as ImagePicker from 'expo-image-picker'
 
 
 export default function profile() {
@@ -24,11 +26,41 @@ export default function profile() {
 
   const displayAvatar = avatarUri || user?.avatar;
 
-  const pickAvatar = async () => { }
+  const pickAvatar = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-  const saveProfile = async () => { }
+    if (status !== 'granted') {
+      Alert.alert('Permission Needed', "Allow access to your photos to change avatar.")
+      return
+    }
 
-  const handleLogout = async () => { }
+    const result = await ImagePicker.launchImageLibraryAsync({
+      mediaTypes: ['images'],
+      quality: 0.8,
+      allowsEditing: true,
+      aspect: [1, 1]
+    })
+
+    if (!result.canceled && result.assets[0]) {
+      setAvatarUri(result.assets[0].uri)
+    }
+  }
+
+  const saveProfile = async () => {
+    setLoading(true)
+    setTimeout(() => {
+      setEditMode(false)
+      setAvatarUri(null)
+      setLoading(false)
+    }, 2000);
+  }
+
+  const handleLogout = async () => {
+    Alert.alert("Sign Out", "Are you sure want to sign out?", [
+      { text: 'Cancel', style: 'cancel' },
+      { text: 'Sign Out', style: 'destructive', onPress: () => { } },
+    ])
+  }
 
   return (
     <SafeAreaView style={styles.safe} edges={["top"]}>
@@ -146,8 +178,53 @@ export default function profile() {
         )}
 
         {/* Profile Options */}
+        {!editMode && (
+          <View style={styles.optionsSection}>
+            <TouchableOpacity style={styles.optionRow}>
+              <View style={styles.optionIcon}>
+                <Ionicons name='settings-outline' size={20} color={Colors.onSurfaceVariant} />
+              </View>
+              <Text style={styles.optionText}>Settings</Text>
+              <Ionicons name='chevron-forward' size={16} color={Colors.outlineVariant} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.optionRow}>
+              <View style={styles.optionIcon}>
+                <Ionicons name='notifications-outline' size={20} color={Colors.onSurfaceVariant} />
+              </View>
+              <Text style={styles.optionText}>Notifications</Text>
+              <Ionicons name='chevron-forward' size={16} color={Colors.outlineVariant} />
+            </TouchableOpacity>
+
+            <TouchableOpacity style={styles.optionRow}>
+              <View style={styles.optionIcon}>
+                <Ionicons name='lock-closed-outline' size={20} color={Colors.onSurfaceVariant} />
+              </View>
+              <Text style={styles.optionText}>Privacy & Security</Text>
+              <Ionicons name='chevron-forward' size={16} color={Colors.outlineVariant} />
+            </TouchableOpacity>
+
+
+            <TouchableOpacity style={styles.optionRow}>
+              <View style={styles.optionIcon}>
+                <Ionicons name='help-circle-outline' size={20} color={Colors.onSurfaceVariant} />
+              </View>
+              <Text style={styles.optionText}>Help & Support</Text>
+              <Ionicons name='chevron-forward' size={16} color={Colors.outlineVariant} />
+            </TouchableOpacity>
+
+          </View>
+        )}
 
         {/* Sign out */}
+        <View style={styles.signOutSection}>
+          <TouchableOpacity style={styles.signOutBtn} onPress={handleLogout}>
+            <Ionicons name='log-out-outline' size={18} color={Colors.error} />
+            <Text style={styles.signOutText}>Sign Out</Text>
+          </TouchableOpacity>
+        </View>
+
+
       </ScrollView>
 
     </SafeAreaView>
